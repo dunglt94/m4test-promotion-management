@@ -2,11 +2,16 @@ package com.example.m4testpromotionmanagement.controller;
 
 import com.example.m4testpromotionmanagement.model.Promotion;
 import com.example.m4testpromotionmanagement.service.IPromotionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -29,7 +34,14 @@ public class PromotionController {
     }
     
     @PostMapping
-    public ResponseEntity<Promotion> createPromotion(@RequestBody Promotion promotion) {
+    public ResponseEntity<?> createPromotion(@Valid @RequestBody Promotion promotion, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error ->
+                    errors.put(error.getField(), error.getDefaultMessage())
+            );
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity<>(promotionService.save(promotion), HttpStatus.CREATED);
     }
 
